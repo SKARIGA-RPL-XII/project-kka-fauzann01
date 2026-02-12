@@ -1,90 +1,104 @@
 @extends('layouts.app')
 
-@section('title', 'Rental Saya')
+@section('title', 'Kelola Rental')
 
 @section('content')
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-    <div class="container">
-        <a class="navbar-brand fw-bold" href="{{ route('user.dashboard') }}"><i class="bi bi-stars text-primary"></i> Dekorasi Rental</a>
-        <div class="ms-auto d-flex align-items-center">
-            <a href="{{ route('user.order.status') }}" class="btn btn-outline-info me-2">
-                <i class="bi bi-list-check"></i> Status Pesanan
-            </a>
-            <a href="{{ route('user.cart') }}" class="btn btn-outline-primary me-2 position-relative">
-                <i class="bi bi-cart"></i> Keranjang
-                @if($cartCount > 0)
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ $cartCount }}</span>
-                @endif
-            </a>
-            <a href="{{ route('user.rentals') }}" class="btn btn-outline-primary me-2">
-                <i class="bi bi-calendar-check"></i> Riwayat
-            </a>
-            <span class="me-3">{{ Auth::user()->name }}</span>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#"><i class="bi bi-stars"></i> Admin Panel</a>
+        <div class="ms-auto">
+            <span class="text-white me-3">{{ Auth::user()->name }}</span>
             <form method="POST" action="{{ route('logout') }}" class="d-inline" id="logoutForm">
                 @csrf
-                <button type="submit" class="btn btn-outline-danger btn-sm">Logout</button>
+                <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
             </form>
         </div>
     </div>
 </nav>
 
-<div class="container py-5">
-    <h2 class="mb-4">Riwayat Rental Saya</h2>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 sidebar p-3">
+            <nav class="nav flex-column">
+                <a class="nav-link" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+                <a class="nav-link" href="{{ route('admin.categories') }}"><i class="bi bi-tags"></i> Kategori</a>
+                <a class="nav-link" href="{{ route('admin.decorations') }}"><i class="bi bi-box-seam"></i> Dekorasi</a>
+                <a class="nav-link active" href="{{ route('admin.rentals') }}"><i class="bi bi-calendar-check"></i> Rental</a>
+            </nav>
+        </div>
 
-    @if(session('success'))
-        <div class="alert alert-success">{{ session('success') }}</div>
-    @endif
+        <div class="col-md-10 p-4">
+            <h2 class="mb-4">Kelola Rental</h2>
 
-    @if($rentals->count() > 0)
-        <div class="row g-4">
-            @foreach($rentals as $rental)
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <h5 class="card-title mb-0">{{ $rental->decoration->name }}</h5>
-                            @if($rental->status == 'pending')
-                                <span class="badge bg-warning">Pending</span>
-                            @elseif($rental->status == 'approved')
-                                <span class="badge bg-success">Approved</span>
-                            @elseif($rental->status == 'rejected')
-                                <span class="badge bg-danger">Rejected</span>
-                            @else
-                                <span class="badge bg-info">Completed</span>
-                            @endif
-                        </div>
-                        
-                        <div class="mb-2">
-                            <i class="bi bi-calendar-event text-primary"></i>
-                            <strong>Periode:</strong> {{ $rental->start_date->format('d/m/Y') }} - {{ $rental->end_date->format('d/m/Y') }}
-                        </div>
-                        <div class="mb-2">
-                            <i class="bi bi-box-seam text-primary"></i>
-                            <strong>Jumlah:</strong> {{ $rental->quantity }} unit
-                        </div>
-                        <div class="mb-2">
-                            <i class="bi bi-cash-stack text-primary"></i>
-                            <strong>Total Harga:</strong> Rp {{ number_format($rental->total_price, 0, ',', '.') }}
-                        </div>
-                        @if($rental->notes)
-                        <div class="mb-2">
-                            <i class="bi bi-chat-left-text text-primary"></i>
-                            <strong>Catatan:</strong> {{ $rental->notes }}
-                        </div>
-                        @endif
-                        <div class="text-muted small">
-                            <i class="bi bi-clock"></i> Dibuat: {{ $rental->created_at->format('d/m/Y H:i') }}
-                        </div>
-                    </div>
+            @if(session('success'))
+                <div class="alert alert-success">{{ session('success') }}</div>
+            @endif
+
+            <div class="card">
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>User</th>
+                                <th>Dekorasi</th>
+                                <th>Tanggal</th>
+                                <th>Qty</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($rentals as $rental)
+                            <tr>
+                                <td>{{ $rental->id }}</td>
+                                <td>{{ $rental->user->name }}</td>
+                                <td>{{ $rental->decoration->name }}</td>
+                                <td>{{ $rental->start_date->format('d/m/Y') }} - {{ $rental->end_date->format('d/m/Y') }}</td>
+                                <td>{{ $rental->quantity }}</td>
+                                <td>Rp {{ number_format($rental->total_price, 0, ',', '.') }}</td>
+                                <td>
+                                    @if($rental->status == 'pending')
+                                        <span class="badge bg-warning">Pending</span>
+                                    @elseif($rental->status == 'approved')
+                                        <span class="badge bg-success">Approved</span>
+                                    @elseif($rental->status == 'rejected')
+                                        <span class="badge bg-danger">Rejected</span>
+                                    @else
+                                        <span class="badge bg-info">Completed</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($rental->status == 'pending')
+                                    <form method="POST" action="{{ route('admin.rentals.status', $rental->id) }}" class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="approved">
+                                        <button type="submit" class="btn btn-success btn-sm">Approve</button>
+                                    </form>
+                                    <form method="POST" action="{{ route('admin.rentals.status', $rental->id) }}" class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="rejected">
+                                        <button type="submit" class="btn btn-danger btn-sm">Reject</button>
+                                    </form>
+                                    @elseif($rental->status == 'approved')
+                                    <form method="POST" action="{{ route('admin.rentals.status', $rental->id) }}" class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="btn btn-info btn-sm">Complete</button>
+                                    </form>
+                                    @endif
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            @endforeach
         </div>
-    @else
-        <div class="alert alert-info">
-            <i class="bi bi-info-circle"></i> Anda belum memiliki riwayat rental. 
-            <a href="{{ route('user.dashboard') }}" class="alert-link">Mulai sewa sekarang!</a>
-        </div>
-    @endif
+    </div>
 </div>
 @endsection
